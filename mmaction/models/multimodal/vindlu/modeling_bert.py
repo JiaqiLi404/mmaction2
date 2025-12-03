@@ -41,10 +41,13 @@ from transformers.modeling_outputs import (
     MultipleChoiceModelOutput, NextSentencePredictorOutput,
     QuestionAnsweringModelOutput, SequenceClassifierOutput,
     TokenClassifierOutput)
-from transformers.modeling_utils import (PreTrainedModel,
-                                         apply_chunking_to_forward,
-                                         find_pruneable_heads_and_indices,
-                                         prune_linear_layer)
+
+from transformers.modeling_utils import PreTrainedModel
+try:
+    from transformers.pytorch_utils import apply_chunking_to_forward,find_pruneable_heads_and_indices,prune_linear_layer
+except ImportError:
+    # transformers < 4.40
+    from transformers.modeling_utils import apply_chunking_to_forward,find_pruneable_heads_and_indices,prune_linear_layer
 
 transformers.logging.set_verbosity_error()
 

@@ -976,7 +976,11 @@ class ColorJitter(BaseTransform):
         img = np.clip(img, 0, 255).astype(np.uint8)
         hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
         offset = int(factor * 255)
-        hsv[..., 0] = (hsv[..., 0] + offset) % 180
+        # --- FIX for NumPy 2.0 ---
+        h = hsv[..., 0].astype(np.int16)
+        h = (h + offset) % 180
+        hsv[..., 0] = h.astype(np.uint8)
+        # --------------------------
         img = cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
         return img.astype(np.float32)
 
