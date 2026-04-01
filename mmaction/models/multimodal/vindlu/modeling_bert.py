@@ -44,10 +44,27 @@ from transformers.modeling_outputs import (
 
 from transformers.modeling_utils import PreTrainedModel
 try:
-    from transformers.pytorch_utils import apply_chunking_to_forward,find_pruneable_heads_and_indices,prune_linear_layer
+    from transformers.pytorch_utils import apply_chunking_to_forward, prune_linear_layer
 except ImportError:
     # transformers < 4.40
-    from transformers.modeling_utils import apply_chunking_to_forward,find_pruneable_heads_and_indices,prune_linear_layer
+    from transformers.modeling_utils import apply_chunking_to_forward, prune_linear_layer
+
+try:
+    from transformers.pytorch_utils import find_pruneable_heads_and_indices
+except ImportError:
+    try:
+        from transformers.modeling_utils import find_pruneable_heads_and_indices
+    except ImportError:
+        def find_pruneable_heads_and_indices(heads, n_heads, head_size, already_pruned_heads):
+            """Backward-compatible pruning helper for newer transformers versions."""
+            mask = torch.ones(n_heads, head_size)
+            heads = set(heads) - already_pruned_heads
+            for head in heads:
+                head = head - sum(1 if h < head else 0 for h in already_pruned_heads)
+                mask[head] = 0
+            mask = mask.view(-1).contiguous().eq(1)
+            index = torch.arange(len(mask))[mask].long()
+            return heads, index
 
 transformers.logging.set_verbosity_error()
 
